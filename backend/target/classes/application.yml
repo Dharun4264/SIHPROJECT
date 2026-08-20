@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: train-traffic-control
+
+  datasource:
+    # Point this at the schema you create in MySQL Workbench, e.g.:
+    #   CREATE DATABASE train_traffic_control CHARACTER SET utf8mb4;
+    url: "jdbc:mysql://localhost:3306/train_traffic_control?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true"
+    username: root
+    password: 5698
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      # 'update' is convenient for prototype iteration; switch to a
+      # migration tool (Flyway/Liquibase) before this becomes a real system.
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+    # Ensures Hibernate creates/updates the schema BEFORE data.sql runs.
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.hibernate.SQL: debug
