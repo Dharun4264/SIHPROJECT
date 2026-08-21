@@ -1,0 +1,15 @@
+# Production / MySQL Workbench profile.
+# Run: .\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=mysql
+spring:
+  datasource:
+    url: "jdbc:mysql://localhost:3306/train_traffic_control?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true"
+    username: root
+    password: 5698
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+  sql:
+    init:
+      data-locations: classpath:data.sql,classpath:data-mysql.sql
