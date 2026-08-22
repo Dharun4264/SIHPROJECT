@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Intelligent Traffic Optima (ITO) — AI-powered railway conflict resolution and schedule optimization for Indian Railways.">
+    <title>ITO — Intelligent Traffic Optima | Ministry of Railways</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ════════════════════════════════════════════
+             SIDEBAR
+             ════════════════════════════════════════════ -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>ITO</h1>
+                <p data-i18n="appName">Intelligent Traffic Optima</p>
+                <p class="subtitle" data-i18n="ministry">Ministry of Railways</p>
+            </div>
+
+            <nav class="sidebar-nav nav-links">
+                <ul>
+                    <li class="active" data-tab="dashboard">
+                        <a href="#">
+                            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 7.2 10.7 16M17.2 6.3 13.3 16M7 6h10"/><path d="M13 10a7 7 0 1 1-2 9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m13 10 3 2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+                            <span data-i18n="navDashboard">Dashboard</span>
+                        </a>
+                    </li>
+                    <li data-tab="schedules">
+                        <a href="#">
+                            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17V7h14v10M5 12h14M8 17v2M16 17v2M8 7l1-3h6l1 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16.5" cy="8.5" r="3.5" fill="var(--sidebar-nav)" stroke="currentColor" stroke-width="1.5"/><path d="M16.5 6.8v1.9l1.2.8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                            <span data-i18n="navSchedules">Schedules</span>
+                        </a>
+                    </li>
+                    <li data-tab="network-map">
+                        <a href="#">
+                            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18M3 19h18M7 5v14M17 5v14M3 5l7 7-7 7M21 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="12" r="1.8"/><circle cx="14" cy="12" r="1.8"/></svg>
+                            <span data-i18n="navNetworkMap">Network Map</span>
+                        </a>
+                    </li>
+                    <li data-tab="reports">
+                        <a href="#">
+                            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="11" height="18" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 8h5M7 12h5M7 16h3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M18 12a4 4 0 1 1-2.8 1.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M18 12v-2.2M18 12l1.8 1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            <span data-i18n="navReports">Reports</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-bottom">
+            <!-- What-If Simulation Panel -->
+            <div class="what-if-panel">
+                <h2 data-i18n="whatIfTitle">What-If Simulation</h2>
+                <div class="form-group">
+                    <label for="scenario" data-i18n="scenarioLabel">Scenario</label>
+                    <select id="scenario">
+                        <option value="freight-delay" data-i18n="scenarioFreight">Freight Delay (Node A)</option>
+                        <option value="track-maintenance" data-i18n="scenarioMaintenance">Track Maintenance</option>
+                        <option value="weather-alert" data-i18n="scenarioWeather">Weather Alert</option>
+                    </select>
+                </div>
+                <div class="form-group toggle-group">
+                    <label for="auto-resolve" data-i18n="autoResolveLabel">Auto-Resolve Conflicts</label>
+                    <label class="switch">
+                        <input type="checkbox" id="auto-resolve">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <button id="run-simulation-btn" class="primary-btn" data-i18n="runSimulation">Run Simulation</button>
+            </div>
+
+            <!-- Domino Delay Alert Feed -->
+            <div class="alert-feed">
+                <h2 data-i18n="dominoAlerts">Domino Delay Alerts</h2>
+                <div class="alerts-container">
+                <div class="alert critical" data-station="Dindigul Junction (DG)" data-train="20643">
+                    <span class="alert-time">07:12</span>
+                    <span class="alert-msg" data-i18n="alert1">Vande Bharat 20643 approaching Track Sector 4 at Dindigul Junction (DG)</span>
+                </div>
+                <div class="alert warning" data-station="Karur Junction (KRR)" data-train="BOXN-77">
+                    <span class="alert-time">07:10</span>
+                    <span class="alert-msg" data-i18n="alert2">Freight BOXN-77 approaching capacity at Karur Junction (KRR)</span>
+                </div>
+                </div>
+            </div>
+
+            <!-- Conflict Countdown (Deadman Timer) -->
+            <div class="conflict-countdown" id="conflict-countdown">
+                <div class="countdown-label" data-i18n="conflictCountdown">⚠ Unattended Conflict — Auto-Escalation In:</div>
+                <div class="countdown-bar-track">
+                    <div class="countdown-bar-fill" id="countdown-fill"></div>
+                </div>
+                <div class="countdown-time" id="countdown-time">15s</div>
+            </div>
+            </div>
+        </aside>
+
+        <!-- ════════════════════════════════════════════
+             MAIN CONTENT
+             ════════════════════════════════════════════ -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="system-metrics">
+                    <div class="metric">
+                        <span class="label" data-i18n="systemStatus">System Status</span>
+                        <span class="value success" id="system-status-value" data-i18n="statusOptimal">Optimal</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label" data-i18n="activeTrains">Active Trains</span>
+                        <span class="value tabular-nums" id="active-trains-value">1,248</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label" data-i18n="networkLoad">Network Load</span>
+                        <span class="value tabular-nums" id="network-load-value">78%</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label" data-i18n="networkDelay">Est. Network Delay</span>
+                        <span class="value tabular-nums" id="network-delay-value">+22m</span>
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <!-- Language Selector -->
+                    <div class="lang-selector-wrap">
+                        <select id="lang-selector" aria-label="Select Language">
+                            <option value="en">English</option>
+                            <option value="hi">हिन्दी</option>
+                            <option value="ta">தமிழ்</option>
+                            <option value="te">తెలుగు</option>
+                            <option value="bn">বাংলা</option>
+                            <option value="mr">मराठी</option>
+                            <option value="kn">ಕನ್ನಡ</option>
+                            <option value="ml">മലയാളം</option>
+                            <option value="gu">ગુજરાતી</option>
+                            <option value="pa">ਪੰਜਾਬੀ</option>
+                        </select>
+                    </div>
+                    <div class="user-profile">
+                        <span class="active-time tabular-nums" id="active-time">07:15:09</span>
+                        <div class="avatar">AD</div>
+                        <span class="username">Admin</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- ─────────────────────────────────────────
+                 DASHBOARD TAB
+                 ───────────────────────────────────────── -->
+            <section id="dashboard-stage" class="main-stage">
+                <div class="stage-header">
+                    <h2 data-i18n="stringChartTitle">Time-Distance String Chart</h2>
+                    <div class="stage-actions">
+                        <button class="secondary-btn" id="btn-export-dashboard" data-i18n="btnExport">Export</button>
+                        <button class="secondary-btn" id="btn-filter-dashboard" data-i18n="btnFilter">Filter</button>
+                        <button class="secondary-btn" id="btn-add-route" data-i18n="btnAddRoute">+ Add Route</button>
+                    </div>
+                </div>
+                <div class="canvas-container">
+                    <div id="loading-overlay" class="hidden">
+                        <div class="spinner"></div>
+                        <p data-i18n="runningSimulation">Running Simulation...</p>
+                    </div>
+                    <canvas id="string-chart"></canvas>
+                </div>
+            </section>
+
+            <!-- ─────────────────────────────────────────
+                 SCHEDULES TAB
+                 ───────────────────────────────────────── -->
+            <section id="schedules-stage" class="main-stage hidden">
+                <div class="stage-header">
+                    <h2 data-i18n="timetableTitle">Train Timetable & Live Schedules</h2>
+                    <div class="stage-actions">
+                        <button class="secondary-btn" id="btn-export-schedules" data-i18n="btnExport">Export</button>
+                        <button class="secondary-btn" id="btn-filter-schedules" data-i18n="btnFilter">Filter</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="timetable-table" id="schedule-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="thTrainNumber">Train Number</th>
+                                <th class="train-name-column" data-i18n="thTrainName">Train Name</th>
+                                <th data-i18n="thType">Type</th>
+                                <th class="current-station-column" data-i18n="thCurrentStation">Current Station</th>
+                                <th data-i18n="thScheduledArr">Scheduled Arrival</th>
+                                <th data-i18n="thExpectedArr">Expected Arrival</th>
+                                <th data-i18n="thStatus">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-tbody">
+                            <tr data-type="premium" data-status="ontime">
+                                <td class="tabular-nums">20643</td>
+                                <td>Coimbatore - MGR Chennai Central Vande Bharat Express</td>
+                                <td><span class="type-badge premium">Premium</span></td>
+                                <td>Dindigul Junction (DG)</td>
+                                <td class="tabular-nums telemetry-arrival" data-train-id="20643">07:45</td>
+                                <td class="tabular-nums">07:45</td>
+                                <td><span class="badge badge-success" data-i18n="statusOnTime">ON TIME</span></td>
+                            </tr>
+                            <tr data-type="passenger" data-status="delayed">
+                                <td class="tabular-nums">12637</td>
+                                <td>Pandian Superfast Express</td>
+                                <td><span class="type-badge passenger">Passenger</span></td>
+                                <td>Erode Junction (ED)</td>
+                                <td class="tabular-nums">08:00</td>
+                                <td class="tabular-nums delay-cell telemetry-arrival" data-train-id="12637">08:22</td>
+                                <td><span class="badge badge-warning">DELAYED (+22m)</span></td>
+                            </tr>
+                            <tr data-type="freight" data-status="ontime">
+                                <td class="tabular-nums">BOXN-77</td>
+                                <td>Tuticorin Coal &amp; Cement Freight Rake</td>
+                                <td><span class="type-badge freight">Freight</span></td>
+                                <td>Karur Junction (KRR) - Loop Line Siding</td>
+                                <td class="tabular-nums telemetry-arrival" data-train-id="BOXN-77">08:10</td>
+                                <td class="tabular-nums">08:10</td>
+                                <td><span class="badge badge-success" data-i18n="statusOnTime">ON TIME</span></td>
+                            </tr>
+                            <tr data-type="premium" data-status="ontime">
+                                <td class="tabular-nums">12002</td>
+                                <td>New Delhi Shatabdi</td>
+                                <td><span class="type-badge premium">Premium</span></td>
+                                <td>Madurai Junction (MDU)</td>
+                                <td class="tabular-nums">08:15</td>
+                                <td class="tabular-nums">08:15</td>
+                                <td><span class="badge badge-success" data-i18n="statusOnTime">ON TIME</span></td>
+                            </tr>
+                            <tr data-type="premium" data-status="ontime">
+                                <td class="tabular-nums">12952</td>
+                                <td>Mumbai Rajdhani</td>
+                                <td><span class="type-badge premium">Premium</span></td>
+                                <td>Karur Junction (KRR)</td>
+                                <td class="tabular-nums">08:30</td>
+                                <td class="tabular-nums">08:30</td>
+                                <td><span class="badge badge-success" data-i18n="statusOnTime">ON TIME</span></td>
+                            </tr>
+                            <tr data-type="passenger" data-status="rerouted">
+                                <td class="tabular-nums">12259</td>
+                                <td>Howrah Duronto Express</td>
+                                <td><span class="type-badge passenger">Passenger</span></td>
+                                <td>Erode Junction (ED)</td>
+                                <td class="tabular-nums">08:45</td>
+                                <td class="tabular-nums">08:45</td>
+                                <td><span class="badge badge-info">REROUTED</span></td>
+                            </tr>
+                            <tr data-type="freight" data-status="delayed">
+                                <td class="tabular-nums">BOXN-102</td>
+                                <td>Iron Ore Freight Rake</td>
+                                <td><span class="type-badge freight">Freight</span></td>
+                                <td>Tirunelveli Junction (TEN)</td>
+                                <td class="tabular-nums">09:10</td>
+                                <td class="tabular-nums delay-cell">09:35</td>
+                                <td><span class="badge badge-warning">DELAYED (+25m)</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- ─────────────────────────────────────────
+                 NETWORK MAP TAB
+                 ───────────────────────────────────────── -->
+            <section id="network-map-stage" class="main-stage hidden">
+                <div class="stage-header">
+                    <h2 data-i18n="trackSchematicTitle">Track Schematic Diagram</h2>
+                    <div class="stage-actions">
+                        <button class="secondary-btn" id="btn-zoom-in" data-i18n="btnZoomIn">Zoom In</button>
+                        <button class="secondary-btn" id="btn-zoom-out" data-i18n="btnZoomOut">Zoom Out</button>
+                    </div>
+                </div>
+                <div class="network-map-container" id="network-map-wrapper">
+                    <svg viewBox="0 0 1000 600" class="network-svg" id="network-svg">
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="#34150F"/>
+                            </marker>
+                        </defs>
+
+                        <!-- Grid Lines -->
+                        <path d="M 0 100 H 1000 M 0 200 H 1000 M 0 300 H 1000 M 0 400 H 1000 M 0 500 H 1000" stroke="#D3985833" stroke-width="1" />
+                        <path d="M 100 0 V 600 M 200 0 V 600 M 300 0 V 600 M 400 0 V 600 M 500 0 V 600 M 600 0 V 600 M 700 0 V 600 M 800 0 V 600 M 900 0 V 600" stroke="#D3985833" stroke-width="1" />
+
+                        <!-- Main Tracks -->
+                        <path d="M 50 250 H 950" stroke="#34150F" stroke-width="4" fill="none" />
+                        <path d="M 50 350 H 950" stroke="#34150F" stroke-width="4" fill="none" />
+
+                        <!-- Siding / Loop Lines -->
+                    <path d="M 260 250 L 290 185 H 360 L 390 250" stroke="#D39858" stroke-width="3" fill="none" />
+                    <path d="M 455 250 L 500 350" stroke="#85431E" stroke-width="3" fill="none" />
+
+                        <!-- Stations -->
+                        <circle cx="100" cy="250" r="8" fill="#34150F" data-station="Erode Junction (ED)" />
+                        <circle cx="100" cy="350" r="8" fill="#34150F" data-station="Erode Junction (ED)" />
+                        <text x="100" y="225" font-weight="700" text-anchor="middle" fill="#34150F" font-size="13">Erode Jn (ED)</text>
+
+                        <circle cx="325" cy="185" r="8" fill="#34150F" data-station="Karur Junction (KRR)" />
+                        <circle cx="325" cy="250" r="8" fill="#34150F" data-station="Karur Junction (KRR)" />
+                        <circle cx="325" cy="350" r="8" fill="#34150F" data-station="Karur Junction (KRR)" />
+                        <text x="325" y="160" font-weight="700" text-anchor="middle" fill="#34150F" font-size="13">Karur Jn (KRR)</text>
+
+                        <circle cx="500" cy="250" r="8" fill="#34150F" data-station="Dindigul Junction (DG)" />
+                        <circle cx="500" cy="350" r="8" fill="#34150F" data-station="Dindigul Junction (DG)" />
+                        <text x="500" y="225" font-weight="700" text-anchor="middle" fill="#34150F" font-size="13">Dindigul Jn (DG)</text>
+
+                        <circle cx="675" cy="250" r="8" fill="#34150F" data-station="Madurai Junction (MDU)" />
+                        <circle cx="675" cy="350" r="8" fill="#34150F" data-station="Madurai Junction (MDU)" />
+                        <circle cx="675" cy="400" r="8" fill="#34150F" data-station="Madurai Junction (MDU)" />
+                        <text x="675" y="225" font-weight="700" text-anchor="middle" fill="#34150F" font-size="13">Madurai Jn (MDU)</text>
+
+                        <circle cx="850" cy="250" r="8" fill="#34150F" data-station="Tirunelveli Junction (TEN)" />
+                        <circle cx="850" cy="350" r="8" fill="#34150F" data-station="Tirunelveli Junction (TEN)" />
+                        <text x="850" y="225" font-weight="700" text-anchor="middle" fill="#34150F" font-size="13">Tirunelveli Jn (TEN)</text>
+
+                        <!-- Trains on Map -->
+                        <g class="train-marker" data-train-id="20643">
+                            <rect x="260" y="242" width="46" height="16" rx="3" fill="#85431E" />
+                            <text x="283" y="254" fill="#FFFDF9" font-size="9" font-weight="bold" text-anchor="middle">20643</text>
+                        </g>
+
+                        <g class="train-marker" data-train-id="12637">
+                            <rect x="710" y="342" width="46" height="16" rx="3" fill="#34150F" />
+                            <text x="733" y="354" fill="#FFFDF9" font-size="9" font-weight="bold" text-anchor="middle">12637</text>
+                        </g>
+
+                        <g class="train-marker" data-train-id="BOXN-77">
+                            <rect x="305" y="177" width="52" height="16" rx="3" fill="#D39858" />
+                            <text x="331" y="189" fill="#34150F" font-size="9" font-weight="bold" text-anchor="middle">BOXN-77</text>
+                            <circle cx="331" cy="170" r="4" fill="#D39858">
+                                <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" repeatCount="indefinite" />
+                            </circle>
+                        </g>
+
+                        <!-- Signals -->
+                        <circle cx="455" cy="238" r="5" fill="#85431E" stroke="#34150F" stroke-width="1.5" />
+                        <line x1="455" y1="238" x2="455" y2="248" stroke="#34150F" stroke-width="2" />
+
+                        <circle cx="500" cy="362" r="5" fill="#D39858" stroke="#34150F" stroke-width="1.5" />
+                        <line x1="500" y1="362" x2="500" y2="352" stroke="#34150F" stroke-width="2" />
+
+                        <!-- Legend -->
+                        <g transform="translate(50, 480)">
+                            <rect x="0" y="0" width="320" height="100" fill="#ffffff" stroke="#e1e5ea" stroke-width="1" rx="6"/>
+                            <circle cx="20" cy="25" r="6" fill="#34150F" />
+                            <text x="35" y="29" font-size="11" fill="#34150F" font-weight="600">Normal Operation</text>
+                            <circle cx="175" cy="25" r="6" fill="#D39858" />
+                            <text x="190" y="29" font-size="11" fill="#34150F" font-weight="600">Warning/Slow</text>
+                            <circle cx="20" cy="65" r="6" fill="#85431E" />
+                            <text x="35" y="69" font-size="11" fill="#34150F" font-weight="600">Critical/Conflict</text>
+                            <line x1="175" y1="65" x2="205" y2="65" stroke="#85431E" stroke-width="3" />
+                            <text x="210" y="69" font-size="11" fill="#34150F" font-weight="600">Priority Path</text>
+                        </g>
+                    </svg>
+                </div>
+            </section>
+
+            <!-- ─────────────────────────────────────────
+                 REPORTS TAB
+                 ───────────────────────────────────────── -->
+            <section id="reports-stage" class="main-stage hidden">
+                <div class="stage-header">
+                    <h2 data-i18n="reportsTitle">Bottleneck & Conflict Analytics</h2>
+                    <div class="stage-actions">
+                        <button class="secondary-btn" id="btn-download-pdf" data-i18n="btnDownloadPDF">Download PDF</button>
+                        <button class="secondary-btn" id="btn-share" data-i18n="btnShare">Share</button>
+                    </div>
+                </div>
+
+                <!-- National Impact Banner -->
+                <div class="national-impact-banner">
+                    <div class="banner-title">
+                        <h3 data-i18n="impactTitle">National Network Impact Metrics</h3>
+                        <p data-i18n="impactSubtitle">Live summary of optimization performance across all zones</p>
+                    </div>
+                    <div class="impact-stats">
+                        <div class="stat-box">
+                            <span class="stat-icon">🔋</span>
+                            <div class="stat-info">
+                                <span class="stat-value tabular-nums">45,000 Liters</span>
+                                <span class="stat-label" data-i18n="fuelSaved">Total Fuel Saved</span>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-icon">🛡️</span>
+                            <div class="stat-info">
+                                <span class="stat-value tabular-nums">14</span>
+                                <span class="stat-label" data-i18n="delaysPrevented">Cascading Delays Prevented</span>
+                            </div>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-icon">⚡</span>
+                            <div class="stat-info">
+                                <span class="stat-value tabular-nums">12%</span>
+                                <span class="stat-label" data-i18n="networkThroughput">Network Throughput</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-container">
+                    <div class="analytics-card border-critical">
+                        <div class="card-header">
+                            <span class="badge badge-critical" data-i18n="badgeCritical">Critical</span>
+                            <span class="card-time">Today, 07:12</span>
+                        </div>
+                        <h3 data-i18n="card1Title">Dindigul Junction (DG) Track Sector 4 Bottleneck</h3>
+                        <p class="card-desc" data-i18n="card1Desc">Express 20643 (Vande Bharat) signal conflict resolved by automatic siding prioritization. Prevents domino delay spreading to trailing freight routes.</p>
+
+                        <div class="card-visuals">
+                            <div class="sparkline-wrapper">
+                                <span class="visual-label" data-i18n="cascadingDelayLabel">Cascading Delay Projection (Mins)</span>
+                                <svg class="sparkline" viewBox="0 0 120 30">
+                                    <path d="M0 25 L20 20 L40 5 L60 22 L80 18 L100 28 L120 28" fill="none" stroke="var(--alert-critical)" stroke-width="2"/>
+                                    <circle cx="40" cy="5" r="3" fill="var(--alert-critical)"/>
+                                </svg>
+                            </div>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar-label">
+                                    <span data-i18n="resolutionProgress">Resolution Progress</span>
+                                    <span class="tabular-nums">85%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill fill-critical" style="width: 85%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-metrics">
+                            <div class="card-metric">
+                                <span class="metric-label" data-i18n="metricDelaysPrevented">Delays Prevented</span>
+                                <span class="metric-value">6 Routes</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="metric-label" data-i18n="metricEstSavings">Estimated Savings</span>
+                                <span class="metric-value tabular-nums">1.5 hrs</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card border-warning">
+                        <div class="card-header">
+                            <span class="badge badge-warning" data-i18n="badgeWarning">Warning</span>
+                            <span class="card-time">Today, 06:45</span>
+                        </div>
+                        <h3 data-i18n="card2Title">Karur Junction (KRR) Loop Line Capacity</h3>
+                        <p class="card-desc" data-i18n="card2Desc">Active loop line siding at Karur Junction is staging Tuticorin coal and cement freight BOXN-77.</p>
+
+                        <div class="card-visuals">
+                            <div class="sparkline-wrapper">
+                                <span class="visual-label" data-i18n="loopOccupancyLabel">Loop Line Occupancy Trend</span>
+                                <svg class="sparkline" viewBox="0 0 120 30">
+                                    <path d="M0 28 L20 22 L40 25 L60 15 L80 8 L100 5 L120 6" fill="none" stroke="#D9822B" stroke-width="2"/>
+                                    <circle cx="100" cy="5" r="3" fill="#D9822B"/>
+                                </svg>
+                            </div>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar-label">
+                                    <span data-i18n="occupancyLevel">Occupancy Level</span>
+                                    <span class="tabular-nums">92%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill fill-warning" style="width: 92%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-metrics">
+                            <div class="card-metric">
+                                <span class="metric-label" data-i18n="metricWaitTime">Wait Time Projection</span>
+                                <span class="metric-value tabular-nums">+18m</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="metric-label" data-i18n="metricRiskIndex">Risk Index</span>
+                                <span class="metric-value" data-i18n="elevated">Elevated</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card border-success">
+                        <div class="card-header">
+                            <span class="badge badge-success" data-i18n="badgeOptimized">Optimized</span>
+                            <span class="card-time">Today, 05:00</span>
+                        </div>
+                        <h3 data-i18n="card3Title">Sector 1 Schedule Optimization</h3>
+                        <p class="card-desc" data-i18n="card3Desc">The resolver coordinates Pandian Superfast Express 12637 with the freight crossover movement.</p>
+
+                        <div class="card-visuals">
+                            <div class="sparkline-wrapper">
+                                <span class="visual-label" data-i18n="throughputLabel">Throughput Efficiency (%)</span>
+                                <svg class="sparkline" viewBox="0 0 120 30">
+                                    <path d="M0 25 L20 22 L40 18 L60 12 L80 5 L100 2 L120 2" fill="none" stroke="var(--primary-accent)" stroke-width="2"/>
+                                    <circle cx="120" cy="2" r="3" fill="var(--primary-accent)"/>
+                                </svg>
+                            </div>
+                            <div class="progress-wrapper">
+                                <div class="progress-bar-label">
+                                    <span data-i18n="efficiencyIndex">Efficiency Index</span>
+                                    <span class="tabular-nums">98%</span>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-fill fill-success" style="width: 98%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-metrics">
+                            <div class="card-metric">
+                                <span class="metric-label" data-i18n="metricFuelSaved">Fuel Saved</span>
+                                <span class="metric-value tabular-nums">4,200 Liters</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="metric-label" data-i18n="metricThroughputGain">Throughput gain</span>
+                                <span class="metric-value tabular-nums">+14%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit Trail -->
+                <div class="audit-section" id="audit-section">
+                    <h3 data-i18n="auditTrailTitle">🔒 Escalation Audit Trail</h3>
+                    <div class="audit-table-container">
+                        <table class="audit-table" id="audit-table">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="auditTime">Timestamp</th>
+                                    <th data-i18n="auditEvent">Event</th>
+                                    <th data-i18n="auditAction">Action Taken</th>
+                                    <th data-i18n="auditOperator">Operator</th>
+                                    <th data-i18n="auditResult">Result</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-tbody">
+                                <!-- Populated dynamically by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+         MODAL: Filter
+         ════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="filter-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="filterModalTitle">Filter Trains</h3>
+                <button class="modal-close" id="filter-modal-close">✕</button>
+            </div>
+            <div class="filter-group">
+                <div class="filter-group-title" data-i18n="filterByType">By Type</div>
+                <div class="filter-options" id="filter-type-options">
+                    <label class="filter-chip active" data-filter-type="premium">
+                        <input type="checkbox" checked> Premium
+                    </label>
+                    <label class="filter-chip active" data-filter-type="passenger">
+                        <input type="checkbox" checked> Passenger
+                    </label>
+                    <label class="filter-chip active" data-filter-type="freight">
+                        <input type="checkbox" checked> Freight
+                    </label>
+                </div>
+            </div>
+            <div class="filter-group">
+                <div class="filter-group-title" data-i18n="filterByStatus">By Status</div>
+                <div class="filter-options" id="filter-status-options">
+                    <label class="filter-chip active" data-filter-status="ontime">
+                        <input type="checkbox" checked> On Time
+                    </label>
+                    <label class="filter-chip active" data-filter-status="delayed">
+                        <input type="checkbox" checked> Delayed
+                    </label>
+                    <label class="filter-chip active" data-filter-status="rerouted">
+                        <input type="checkbox" checked> Rerouted
+                    </label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="secondary-btn" id="filter-reset-btn" data-i18n="btnReset">Reset</button>
+                <button class="primary-btn" id="filter-apply-btn" data-i18n="btnApply">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+         MODAL: Add Route
+         ════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="add-route-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="addRouteTitle">Add New Route</h3>
+                <button class="modal-close" id="add-route-modal-close">✕</button>
+            </div>
+            <div class="modal-form-group">
+                <label for="new-train-number" data-i18n="newTrainNumber">Train Number</label>
+                <input type="text" id="new-train-number" placeholder="e.g. 12345">
+            </div>
+            <div class="modal-form-group">
+                <label for="new-train-name" data-i18n="newTrainName">Train Name</label>
+                <input type="text" id="new-train-name" placeholder="e.g. Chennai Mail">
+            </div>
+            <div class="modal-form-group">
+                <label for="new-train-type" data-i18n="newTrainType">Type</label>
+                <select id="new-train-type">
+                    <option value="passenger">Passenger</option>
+                    <option value="premium">Premium</option>
+                    <option value="freight">Freight</option>
+                </select>
+            </div>
+            <div class="modal-form-group">
+                <label for="new-origin" data-i18n="newOrigin">Origin Station</label>
+                <select id="new-origin">
+                    <option value="0">Erode Junction (ED)</option>
+                    <option value="1">Karur Junction (KRR)</option>
+                    <option value="2">Dindigul Junction (DG)</option>
+                    <option value="3">Madurai Junction (MDU)</option>
+                    <option value="4">Tirunelveli Junction (TEN)</option>
+                </select>
+            </div>
+            <div class="modal-form-group">
+                <label for="new-destination" data-i18n="newDestination">Destination Station</label>
+                <select id="new-destination">
+                    <option value="0">Erode Junction (ED)</option>
+                    <option value="1">Karur Junction (KRR)</option>
+                    <option value="2">Dindigul Junction (DG)</option>
+                    <option value="3">Madurai Junction (MDU)</option>
+                    <option value="4" selected>Tirunelveli Junction (TEN)</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="secondary-btn" id="add-route-cancel-btn" data-i18n="btnCancel">Cancel</button>
+                <button class="primary-btn" id="add-route-submit-btn" data-i18n="btnAddRoute">+ Add Route</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════
+         MODAL: Emergency Escalation (SOS)
+         ════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="escalation-modal">
+        <div class="modal-content escalation-modal-content">
+            <div class="escalation-icon">🚨</div>
+            <div class="escalation-title" data-i18n="escalationTitle">
+                ⚠️ UNATTENDED TRAIN CONFLICT DETECTED AT DINDIGUL JUNCTION (DG) (TRACK SECTOR 4)
+            </div>
+            <div class="escalation-subtitle" data-i18n="escalationSubtitle">
+                Critical conflict has remained unresolved for 15 seconds. Autonomous safety protocol initiated.
+            </div>
+            <div class="broadcast-status">
+                <strong data-i18n="broadcastLabel">📡 Emergency Broadcast Status:</strong><br>
+                <span data-i18n="broadcastMsg">Emergency Alert Transmitted to Dindigul Station Master, Field S&amp;T Dispatcher, and Guard Rake BOXN-77 via Proximity Rail-Band.</span>
+            </div>
+            <div class="escalation-timer" data-i18n="escalationTimerLabel">
+                Autonomous override available. Select action:
+            </div>
+            <div class="escalation-actions">
+                <button class="warning-btn" id="esc-action-siding">
+                    🔀 Auto-Route Freight to Siding Loop B (P1 Safety Clear)
+                </button>
+                <button class="danger-btn" id="esc-action-red-signal">
+                    🛑 Enforce Section Red Hold Signal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- DQN Neural Stream -->
+    <section class="neural-stream" aria-label="DQN Neural Stream">
+        <div class="neural-stream-header">
+            <span>DQN NEURAL STREAM</span>
+            <span class="neural-stream-status">LIVE</span>
+            <button id="toggle-terminal" class="terminal-toggle-btn" type="button" aria-label="Minimize neural stream" aria-expanded="true">−</button>
+        </div>
+        <div id="terminal-body" class="terminal-body">
+            <div class="neural-stream-log" id="neural-stream-log" aria-live="polite"></div>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>
